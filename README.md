@@ -2,7 +2,7 @@
 
 Somos uma organização criada por alunos, para alunos, com o objetivo de expandir para os formandos em Economia a Ciência e Análise de dados, de modo interativo e interessante!
 
-Estaremos fazendo o update de diverso projetos e códigos aqui nessa página. 
+Estaremos fazendo o update de diversos projetos e códigos aqui nessa página, de modo a manter controle e divulgar nossos trabalhos e análises!
 
 Work in progress ;)
 
