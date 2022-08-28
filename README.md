@@ -1,6 +1,8 @@
-:brazil: Fala, galera!! Nós somos a EconData Analytics, a primeira liga de análise de dados econômicos da PUC-Rio.
+:brazil: Fala, galera!! Bem vindos ao Github do Econdata Analytics, o Núcleo de Ciência de Dados dos alunos de Economia da PUC-Rio. 
 
-Estaremos fazendo o update de diverso projetos e códigos aqui nessa página.
+Somos uma organização criada por alunos, para alunos, com o objetivo de expandir para os formandos em Economia a Ciência e Análise de dados, de modo interativo e interessante!
+
+Estaremos fazendo o update de diverso projetos e códigos aqui nessa página. 
 
 Work in progress ;)
 
