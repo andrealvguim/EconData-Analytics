@@ -4,6 +4,33 @@ library(plotly)
 library(lubridate)
 library(usethis)
 
+
+inflacao <- rbcb::get_series(c("ipca" = 433,
+                               "ipca_alimentacao_e_bebidas" = 1635,
+                               "ipca_habitacao" = 1636,
+                               "ipca_artigos_de_residencia" = 1637,
+                               "ipca_vestuario" = 1638,
+                               "ipca_transportes" = 1639,
+                               "ipca_comunicacao" = 1640,
+                               "ipca_saude_e_cuidados_pessoais" = 1641,
+                               "ipca_despesas_pessoais" = 1642,
+                               "ipca_educacao" = 1643,
+                               "ipca_comercializaveis" = 4447,
+                               "ipca_nao_comercializaveis" = 4448,
+                               "ipca_monitorados" = 4449,
+                               "ipca_nucleo_medias_aparadas(suavizado)" = 4466,
+                               "ipca_nucleo_medias_aparadas(sem_suavizado)" = 11426,
+                               "ipca_nao_duraveis" = 10841,
+                               "ipca_semi_duraveis" = 10842,
+                               "ipca_duraveis" = 10843,
+                               "ipca_servicos" = 10844,
+                               "ipca_livres" = 11428,
+                               "ipca_industriais" = 27863,
+                               "ipca_alimentacao_no_domicilio" = 27864,
+                               "indice_de_difusao" = 21379), start_date) %>%
+  reshape::merge_recurse() %>%
+  remove_end_date()
+
 ##### Gráfico ICBR ##### 
 icbr <- inflacao %>% select(1, 25:28) %>%
   pivot_longer(-date,
@@ -139,7 +166,8 @@ inf_temp <- inf_temp %>%
   pivot_longer(-date, names_to = "Tipo", values_to = "Valores") 
 
 graph_ipca3 <- inf_temp %>% filter(year(date) >= 2018) %>% ggplot(aes(x = month(date), y = Valores, color = Tipo))+
-  geom_line(size = 0.75) +
+  geom_line() +
+  geom_point() +
   facet_grid(rows = vars(year(date)),
              cols = vars(Tipo)) +
   scale_y_continuous(breaks = scales::pretty_breaks(3)) +
