@@ -262,31 +262,29 @@ inf_temp <- inf_temp %>%
   pivot_longer(-date, names_to = "Tipo", values_to = "Valores") 
 
 inflacao <- inflacao %>%
-  mutate(ipca_alimentos = ipca_livres - ((37.22/74.91) * ipca_servicos) - ((24.59/74.91) * ipca_industriais)) %>%
-  mutate(ipca = roll_prodr(1 + (ipca/100), n = 12L, fill = NA) - 1,
-           ipca_alimentacao_e_bebidas = roll_prodr(1 + (ipca_alimentacao_e_bebidas/100), n = 12, fill = NA) - 1,
-           ipca_habitacao = roll_prodr(1 + (ipca_habitacao/100), n = 12, fill = NA) - 1,
-           ipca_artigos_de_residencia = roll_prodr(1 + (ipca_artigos_de_residencia/100), n = 12, fill = NA) - 1,
-           ipca_vestuario = roll_prodr(1 + (ipca_vestuario/100), n = 12, fill = NA) - 1,
-           ipca_transportes = roll_prodr(1 + (ipca_transportes/100), n = 12, fill = NA) - 1,
-           ipca_comunicacao = roll_prodr(1 + (ipca_comunicacao/100), n = 12, fill = NA) - 1,
-           ipca_saude_e_cuidados_pessoais = roll_prodr(1 + (ipca_saude_e_cuidados_pessoais/100), n = 12, fill = NA) - 1,
-           ipca_despesas_pessoais = roll_prodr(1 + (ipca_despesas_pessoais/100), n = 12, fill = NA) - 1,
-           ipca_educacao = roll_prodr(1 + (ipca_educacao/100), n = 12, fill = NA) - 1,
-           ipca_comercializaveis = roll_prodr(1 + (ipca_comercializaveis/100), n = 12, fill = NA) - 1,
-           ipca_nao_comercializaveis = roll_prodr(1 + (ipca_nao_comercializaveis/100), n = 12, fill = NA) - 1,
-           ipca_monitorados = roll_prodr(1 + (ipca_monitorados/100), n = 12, fill = NA) - 1,
-           ipca_nucleo_medias_aparadas_suavizado = roll_prodr(1 + (ipca_nucleo_medias_aparadas_suavizado/100), n = 12, fill = NA) - 1,
-           ipca_nucleo_medias_aparadas_sem_suavizado = roll_prodr(1 + (ipca_nucleo_medias_aparadas_sem_suavizado/100), n = 12, fill = NA) - 1,
-           ipca_nao_duraveis = roll_prodr(1 + (ipca_nao_duraveis/100), n = 12, fill = NA) - 1,
-           ipca_semi_duraveis = roll_prodr(1 + (ipca_semi_duraveis/100), n = 12, fill = NA) - 1,
-           ipca_duraveis = roll_prodr(1 + (ipca_duraveis/100), n = 12, fill = NA) - 1,
-           ipca_servicos = roll_prodr(1 + (ipca_servicos/100), n = 12, fill = NA) - 1,
-           ipca_livres = roll_prodr(1 + (ipca_livres/100), n = 12, fill = NA) - 1,
-           ipca_industriais = roll_prodr(1 + (ipca_industriais/100), n = 12, fill = NA) - 1,
-           ipca_alimentacao_no_domicilio = roll_prodr(1 + (ipca_alimentacao_no_domicilio/100), n = 12, fill = NA) - 1,
-           ipca_alimentos = roll_prodr(1 + (ipca_alimentos/100), n = 12, fill = NA) - 1)
+  mutate(ipca_alimentos = ipca_livres - ((37.22/74.91) * ipca_servicos) - ((24.59/74.91) * ipca_industriais)) 
 
+vec <- c(2:23, 33)
+
+for(i in 1:length(vec)){
+  inflacao[,vec[i]] <- roll_prodr(1 + (inflacao[,vec[i]]/100), n = 12L, fill = NA) - 1
+  inflacao[,vec[i]] <- round(100 * inflacao[,vec[i]], 2)
+}
+
+#Pesos calculados conforme POF 2017-2018 disponibilizado pelo BCB no seguinte link: #https://www.bcb.gov.br/content/ri/relatorioinflacao/201912/ri201912b7p.pdf
+
+inflacao_atual_12_pesos <- inflacao %>%
+  select(1:11) %>%
+  mutate(ipca_alimentacao_e_bebidas = 0.1899 * ipca_alimentacao_e_bebidas) %>%
+  mutate(ipca_habitacao = 0.1516 * ipca_habitacao) %>%
+  mutate(ipca_artigos_de_residencia = 0.0402 * ipca_artigos_de_residencia) %>%
+  mutate(ipca_vestuario = 0.0480 * ipca_vestuario) %>%
+  mutate(ipca_transportes = 0.2084 * ipca_transportes) %>%
+  mutate(ipca_comunicacao = 0.0619 * ipca_comunicacao) %>%
+  mutate(ipca_saude_e_cuidados_pessoais = 0.1346 * ipca_saude_e_cuidados_pessoais) %>%
+  mutate(ipca_despesas_pessoais = 0.106 * ipca_despesas_pessoais) %>%
+  mutate(ipca_educacao = 0.0595 * ipca_educacao) %>%
+  pivot_longer(-c(date, ipca), names_to = "Tipo", values_to = "Valores")
 
 inflacao_atual_12 <- inflacao %>%
   select(1:11) %>%
@@ -313,8 +311,9 @@ icbr %>% ggplot(aes(x = date, y = Valores, color = Tipo)) +
                                   face = "bold"),
         legend.position = "bottom") 
 
-inflacao_atual_12 %>% filter(year(date) >= 2020) %>% ggplot(aes(x = month(date), y = Valores, fill = Tipo))+
+inflacao_atual_12_pesos %>% filter(year(date) >= 2020) %>% ggplot(aes(x = month(date), y = Valores, fill = Tipo))+
   geom_col() +
+  geom_line(aes(x = month(date), y = ipca), color = "dark blue") +
   facet_grid(rows = vars(year(date))) +
   scale_y_continuous(breaks = scales::pretty_breaks(4)) +
   labs(x = "Meses", y = "Valores", title = "IPCA", subtitle = "Desagregações IPCA acumulado 12 meses",
@@ -352,7 +351,7 @@ inflacao_atual_12 %>% ggplot(aes(x = date, y = Valores, color = Tipo))+
   scale_y_continuous(breaks = scales::pretty_breaks(3))  +
   scale_x_date(date_labels = "%b/%Y",
                breaks = scales::pretty_breaks(10)) +
-  labs(x = "", y = "Valores", title = "IPCA", subtitle = "Desagregações IPCA acumulado 12 meses",
+  labs(x = "", y = "Valores", title = "IPCA", subtitle = "Desagregações IPCA acumulado 12 meses (em %)",
        caption = "Econdata Analytics, fonte: BCB", colour = "") +
   scale_color_manual(values = c("ipca" = "dark blue",
                                 "ipca_alimentacao_e_bebidas" = "green",
@@ -446,7 +445,7 @@ ipca_duraveis %>%
   geom_line() +
   scale_x_date(date_labels = "%B/%Y",
                breaks = scales::pretty_breaks(5)) +
-  labs(x = "", y = "Valores", title = "IPCA e Bens Duráveis", subtitle = "Acumulado 12 meses",
+  labs(x = "", y = "Valores", title = "IPCA e Bens Duráveis", subtitle = "Acumulado 12 meses (em %)",
        caption = "Econdata Analytics, fonte: BCB", colour = "") +
   scale_color_manual(values = c("ipca" = "dark blue",
                                 "ipca_nao_duraveis" = "red",
@@ -468,7 +467,7 @@ ipca_subgrupos %>%
   geom_line() +
   scale_x_date(date_labels = "%B/%Y",
                breaks = scales::pretty_breaks(5)) +
-  labs(x = "", y = "Valores", title = "IPCA e SubGrupos", subtitle = "Acumulado 12 meses",
+  labs(x = "", y = "Valores", title = "IPCA e SubGrupos", subtitle = "Acumulado 12 meses (em %)",
        caption = "Econdata Analytics, fonte: BCB", colour = "") +
   scale_color_manual(values = c("ipca" = "dark blue",
                                 "ipca_industriais" = "red",
@@ -492,7 +491,7 @@ ipca_comercializaveis %>%
   geom_line() +
   scale_x_date(date_labels = "%Y",
                breaks = scales::pretty_breaks(3)) +
-  labs(x = "", y = "Valores", title = "IPCA Comercializáveis", subtitle = "Acumulado 12 meses",
+  labs(x = "", y = "Valores", title = "IPCA Comercializáveis", subtitle = "Acumulado 12 meses (em %)",
        caption = "Econdata Analytics, fonte: BCB", colour = "") +
   theme(plot.title = element_text(size = 18,
                                   face = "bold")) +
@@ -516,7 +515,7 @@ ipca_nucleo %>%
   geom_line() +
   scale_x_date(date_labels = "%B/%Y",
                breaks = scales::pretty_breaks(5)) +
-  labs(x = "", y = "Valores", title = "Núcleos de Inflação", subtitle = "Acumulado 12 meses",
+  labs(x = "", y = "Valores", title = "Núcleos de Inflação", subtitle = "Acumulado 12 meses (em %)",
        caption = "Econdata Analytics, fonte: BCB", colour = "") +
   theme(plot.title = element_text(size = 18,
                                   face = "bold")) +
